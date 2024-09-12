@@ -5,6 +5,10 @@ def read_file(file_path):
         text = f.read()
     return text
 
+def write_file(output_file, similarity):
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write("{:.2f}".format(similarity))
+        
 def main(original_file, plagiarized_file, output_file):
     original_text = read_file(original_file)
     plagiarized_text = read_file(plagiarized_file)
