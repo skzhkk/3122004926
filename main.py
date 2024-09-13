@@ -71,9 +71,16 @@ class SimHash(object):
 
 
 def read_file(file_path):
-    with open(file_path, 'r', encoding='utf-8') as f:
-        text = f.read()
-    return text
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            text = f.read()
+        return text
+    except FileNotFoundError:
+        raise FileNotFoundError(f"错误: 文件 '{file_path}' 未找到。")
+    except PermissionError:
+        raise PermissionError(f"错误: 没有权限读取文件 '{file_path}'。")
+    except Exception as e:
+        raise Exception(f"发生了一个错误: {e}")
 
 
 def calculate_similarity(original_text, plagiarized_text):
@@ -92,15 +99,26 @@ def calculate_similarity(original_text, plagiarized_text):
 
     # 输出汉明距离
     print("汉明距离:", distance)
-    # 计算两个哈希值之间的海明距离
+
+    if not original_text and plagiarized_text or original_text and not plagiarized_text:
+        return 0.0
+
+    # 计算两个哈希值之间的汉明距离
     similarity = 1 - distance / 64
     # 通过海明距离换算成相似度（Simhash为64位）
     return similarity
 
 
 def write_file(output_file, similarity):
-    with open(output_file, 'w', encoding='utf-8') as f:
-        f.write("{:.2f}".format(similarity))
+    try:
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write("{:.2f}".format(similarity))
+    except PermissionError:
+        raise PermissionError(f"没有权限写入文件: {output_file}")
+    except FileNotFoundError:
+        raise FileNotFoundError(f"文件路径不存在: {output_file}")
+    except Exception as e:
+        raise Exception(f"写入文件时发生错误: {e}")
 
 
 def main(original_file, plagiarized_file, output_file):
