@@ -1,6 +1,5 @@
-import sys
 import unittest
-from main import SimHash, read_file, calculate_similarity, write_file
+from main import SimHash, read_file, calculate_similarity, write_file, main
 
 
 class TestSimHash(unittest.TestCase):
@@ -12,6 +11,7 @@ class TestSimHash(unittest.TestCase):
     def test_empty_string(self):
         # 测试空字符串的情况 期望返回 '00'
         self.assertEqual(self.simhash_instance.simHash(""), '00')
+        self.assertEqual(self.simhash_instance.string_hash(""), 0)
 
     def test_single_word(self):
         # 测试单个单词的哈希值 期望返回特定的二进制字符串
@@ -87,11 +87,35 @@ class TestSimHash(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             read_file("non_existent_file.txt")
 
+
     def test_write_to_non_existent_path(self):
         # 测试写入不存在的路径，期望抛出 FileNotFoundError
         with self.assertRaises(FileNotFoundError):
             write_file("non_existent_directory/output.txt", 0.95)
 
+    def test_main_function_write_file_call(self):
+        # 准备测试数据
+        original_text = "This is the original text."
+        plagiarized_text = "This is the plagiarized text."
+        original_file = "original.txt"
+        plagiarized_file = "plagiarized.txt"
+        output_file = "output.txt"
+
+        # 写入原始文本和抄袭文本到临时文件
+        with open(original_file, 'w', encoding='utf-8') as f:
+            f.write(original_text)
+        with open(plagiarized_file, 'w', encoding='utf-8') as f:
+            f.write(plagiarized_text)
+
+        # 调用被测试的main函数
+        main(original_file, plagiarized_file, output_file)
+
+        # 读取输出文件内容
+        with open(output_file, 'r', encoding='utf-8') as f:
+            output_content = f.read()
+
+        # 断言write_file函数正确写入了相似度到输出文件
+        self.assertGreater(output_content, "0.5")
 
 if __name__ == '__main__':
     unittest.main()
