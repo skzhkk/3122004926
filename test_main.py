@@ -53,7 +53,7 @@ class TestSimHash(unittest.TestCase):
         self.assertAlmostEqual(similarity, 1.0)
 
     def test_one_empty_similarity(self):
-        # 测试两个空文本的相似度 期望返回 1.0
+        # 测试两个空文本的相似度 期望返回 0
         original_text = "a"
         plagiarized_text = ""
         similarity = calculate_similarity(original_text, plagiarized_text)
@@ -114,7 +114,7 @@ class TestSimHash(unittest.TestCase):
         with open(output_file, 'r', encoding='utf-8') as f:
             output_content = f.read()
 
-        # 断言write_file函数正确写入了相似度到输出文件
+        # write_file函数正确写入了相似度到输出文件
         self.assertGreater(output_content, "0.5")
 
 if __name__ == '__main__':
