@@ -3,6 +3,7 @@ import jieba
 import jieba.analyse
 import numpy as np
 import re
+import concurrent.futures
 
 
 class SimHash(object):
@@ -15,9 +16,11 @@ class SimHash(object):
         content = ' '.join([word for word in content.split() if word not in stop_words])
 
         # 对输入内容进行分词
-        seg = jieba.cut(content)
-        # jieba基于TF-IDF提取前10个关键词 用|连接成一个字符串 返回一个包含元组（关键词，权重）的列表
-        keyWords = jieba.analyse.extract_tags("|".join(seg), topK=10, withWeight=True)
+        seg = list(jieba.cut(content))
+        keyWords = []
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(jieba.analyse.extract_tags, "|".join(seg), topK=10, withWeight=True)
+            keyWords = future.result()
 
         keyList = []  # 用于存储每个关键词的加权哈希值
         for feature, weight in keyWords:
