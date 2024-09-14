@@ -7,7 +7,7 @@ import concurrent.futures
 
 
 class SimHash(object):
-    def simHash(self, content):
+    def simhash(self, content):
         # 清洗文本
         content = re.sub(r'[^\w\s]', '', content)  # 去除标点符号
         content = ' '.join(content.split())  # 去除多余空格
@@ -17,13 +17,12 @@ class SimHash(object):
 
         # 对输入内容进行分词
         seg = list(jieba.cut(content))
-        keyWords = []
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future = executor.submit(jieba.analyse.extract_tags, "|".join(seg), topK=10, withWeight=True)
-            keyWords = future.result()
+            key_words = future.result()
 
-        keyList = []  # 用于存储每个关键词的加权哈希值
-        for feature, weight in keyWords:
+        key_list = []  # 用于存储每个关键词的加权哈希值
+        for feature, weight in key_words:
             # print('weight: {}'.format(weight))
             # 将关键词转换为二进制字符串（哈希值）
             binstr = self.string_hash(feature)
@@ -35,19 +34,20 @@ class SimHash(object):
                     temp.append(weight)
                 else:
                     temp.append(-weight)
-            keyList.append(temp)  # 当前关键词的加权值列表 temp 添加到 keyList 中
-        listSum = np.sum(np.array(keyList), axis=0)  # keyList 转换为 NumPy 数组按行求和，得到每一位的总和
-        if not keyList:
+            key_list.append(temp)  # 当前关键词的加权值列表 temp 添加到 key_list 中
+        list_sum = np.sum(np.array(key_list), axis=0)  # key_list 转换为 NumPy 数组按行求和，得到每一位的总和
+        if not key_list:
             return '00'
         simhash = ''
-        for i in listSum:
+        for i in list_sum:
             if i > 0:
                 simhash = simhash + '1'
             else:
                 simhash = simhash + '0'
         return simhash  # 返回 simhash 值
 
-    def string_hash(self, source):
+    @staticmethod
+    def string_hash(source):
         if source == "":  # 空字符串返回0
             return 0
         else:
@@ -62,10 +62,11 @@ class SimHash(object):
             x = bin(x).replace('0b', '').zfill(64)[-64:]  # 转换为二进制字符串，去掉前缀 '0b'，并填充至 64 位
             return str(x)  # 返回哈希值字符串
 
-    def getDistance(self, hashstr1, hashstr2):
+    @staticmethod
+    def get_distance(hash_str1, hash_str2):
         length = 0
-        for index, char in enumerate(hashstr1):
-            if char == hashstr2[index]:  # 如果两个哈希字符串在当前位相同，则继续；否则，汉明距离加 1
+        for index, char in enumerate(hash_str1):
+            if char == hash_str2[index]:  # 如果两个哈希字符串在当前位相同，则继续；否则，汉明距离加 1
                 continue
             else:
                 length += 1
@@ -90,15 +91,15 @@ def calculate_similarity(original_text, plagiarized_text):
     # 创建 SimHash 类的实例
     simhash_instance = SimHash()
     # 计算两个文本的哈希值
-    hash1 = simhash_instance.simHash(original_text)
-    hash2 = simhash_instance.simHash(plagiarized_text)
+    hash1 = simhash_instance.simhash(original_text)
+    hash2 = simhash_instance.simhash(plagiarized_text)
 
     # 输出哈希值
     print("文本1的哈希值:", hash1)
     print("文本2的哈希值:", hash2)
 
     # 计算汉明距离
-    distance = simhash_instance.getDistance(hash1, hash2)
+    distance = SimHash.get_distance(hash1, hash2)
 
     # 输出汉明距离
     print("汉明距离:", distance)
@@ -112,25 +113,25 @@ def calculate_similarity(original_text, plagiarized_text):
     return similarity
 
 
-def write_file(output_file, similarity):
+def write_file(file_path, similarity):
     try:
-        with open(output_file, 'w', encoding='utf-8') as f:
+        with open(file_path, 'w', encoding='utf-8') as f:
             f.write("{:.2f}".format(similarity))
     except PermissionError:
-        raise PermissionError(f"没有权限写入文件: {output_file}")
+        raise PermissionError(f"没有权限写入文件: {file_path}")
     except FileNotFoundError:
-        raise FileNotFoundError(f"文件路径不存在: {output_file}")
+        raise FileNotFoundError(f"文件路径不存在: {file_path}")
     except Exception as e:
         raise Exception(f"写入文件时发生错误: {e}")
 
 
-def main(original_file, plagiarized_file, output_file):
-    original_text = read_file(original_file)
-    plagiarized_text = read_file(plagiarized_file)
+def main(original_file_main, plagiarized_file_main, output_file_main):
+    original_text = read_file(original_file_main)
+    plagiarized_text = read_file(plagiarized_file_main)
 
     similarity = calculate_similarity(original_text, plagiarized_text)  # 计算两个文本的相似度
     print(similarity)  # 输出文本相似度
-    write_file(output_file, similarity)  # 写入文件
+    write_file(output_file_main, similarity)  # 写入文件
 
 
 if __name__ == "__main__":

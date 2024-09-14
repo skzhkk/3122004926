@@ -10,32 +10,32 @@ class TestSimHash(unittest.TestCase):
 
     def test_empty_string(self):
         # 测试空字符串的情况 期望返回 '00'
-        self.assertEqual(self.simhash_instance.simHash(""), '00')
+        self.assertEqual(self.simhash_instance.simhash(""), '00')
         self.assertEqual(self.simhash_instance.string_hash(""), 0)
 
     def test_single_word(self):
         # 测试单个单词的哈希值 期望返回特定的二进制字符串
-        self.assertEqual(self.simhash_instance.simHash("hello"),
+        self.assertEqual(self.simhash_instance.simhash("hello"),
                          '0000101110101010100110000011110110110100011101101001011111111101')
 
     def test_identical_strings(self):
         # 测试两个相同字符串的哈希值 期望汉明距离为 0
-        hash1 = self.simhash_instance.simHash("This is a test.")
-        hash2 = self.simhash_instance.simHash("This is a test.")
-        self.assertEqual(self.simhash_instance.getDistance(hash1, hash2), 0)
+        hash1 = self.simhash_instance.simhash("This is a test.")
+        hash2 = self.simhash_instance.simhash("This is a test.")
+        self.assertEqual(self.simhash_instance.get_distance(hash1, hash2), 0)
 
     def test_different_strings(self):
         # 测试两个不同字符串的哈希值 期望汉明距离大于 0
-        hash1 = self.simhash_instance.simHash("This is a test.")
-        hash2 = self.simhash_instance.simHash("This is another test.")
-        distance = self.simhash_instance.getDistance(hash1, hash2)
+        hash1 = self.simhash_instance.simhash("This is a test.")
+        hash2 = self.simhash_instance.simhash("This is another test.")
+        distance = self.simhash_instance.get_distance(hash1, hash2)
         self.assertGreater(distance, 0)
 
     def test_hamming_distance(self):
         # 测试汉明距离的计算 期望返回整数
-        hash1 = self.simhash_instance.simHash("hello world")
-        hash2 = self.simhash_instance.simHash("hello there")
-        distance = self.simhash_instance.getDistance(hash1, hash2)
+        hash1 = self.simhash_instance.simhash("hello world")
+        hash2 = self.simhash_instance.simhash("hello there")
+        distance = self.simhash_instance.get_distance(hash1, hash2)
         self.assertIsInstance(distance, int)
 
     def test_similarity(self):
@@ -87,7 +87,6 @@ class TestSimHash(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             read_file("non_existent_file.txt")
 
-
     def test_write_to_non_existent_path(self):
         # 测试写入不存在的路径，期望抛出 FileNotFoundError
         with self.assertRaises(FileNotFoundError):
@@ -116,6 +115,7 @@ class TestSimHash(unittest.TestCase):
 
         # write_file函数正确写入了相似度到输出文件
         self.assertGreater(output_content, "0.5")
+
 
 if __name__ == '__main__':
     unittest.main()
